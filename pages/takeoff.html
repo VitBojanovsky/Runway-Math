@@ -8,6 +8,33 @@
 <body>
     <h1>Takeoff Performance</h1>
     <p>This page will help you calculate the takeoff performance of various aircraft.</p>
-    
+    <form id="takeoff-form"></form>
+    <label for="aircraft">Select Aircraft:</label>
+    <select id="aircraft" name="aircraft">
+        <option value="Cessna 152">Cessna 152</option>
+        <!--More aircraft will be added once I gather all data-->
+    </select>
+    <label for="pressure">Pressure QNH:</label>
+    <input type="number" id="pressure" name="pressure" required>
+    <label for="temperature">Temperature (°C):</label>
+    <input type="number" id="temperature" name="temperature" required>
+    <label for="altitude">Altitude of the runway(ft):</label>
+    <input type="number" id="altitude" name="altitude" required>
+    <label for="wind">Wind component (headwind +, tailwind -):</label>
+    <input type="number" id="wind" name="wind" required>
+    <label for="runway-surface">Runway Surface:</label>
+    <select id="runway-surface" name="runway-surface">
+        <option value="paved">Paved</option>
+        <option value="grass">Grass</option>
+    </select>
+    <label for="weight">Fuel quantity (lbs):</label>
+    <input type="number" id="weight" name="weight" required>
+    <label for="flaps">Flaps setting:</label>
+    <input type="number" id="flaps" name="flaps" required>
+    <label for="luggage">Payload weight (lbs):</label>
+    <input type="number" id="luggage" name="luggage" required>
+
+    <button type="submit">Calculate Takeoff Distance</button>
+    <div id="result"></div>
 </body>
 </html>
