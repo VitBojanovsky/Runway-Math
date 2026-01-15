@@ -1,0 +1,152 @@
+{
+  "aircraft": "Cessna 152",
+  "notes": "Speed performance assumes optional speed fairings (+2 kt). Other performance unchanged.",
+  "speedPerformance": {
+    "maxSeaLevel": {
+      "knots": 110
+    },
+    "cruise75PercentPower": {
+      "altitudeFt": 8000,
+      "knots": 107
+    }
+  },
+  "cruiseRange": {
+    "recommendedMixture": true,
+    "powerSettings": [
+      {
+        "powerPercent": 75,
+        "altitudeFt": 8000,
+        "usableFuelGal": 24.5,
+        "rangeNm": 350,
+        "timeHours": 3.4
+      },
+      {
+        "powerPercent": 75,
+        "altitudeFt": 8000,
+        "usableFuelGal": 37.5,
+        "rangeNm": 580,
+        "timeHours": 5.5
+      }
+    ],
+    "maximumRange": [
+      {
+        "altitudeFt": 10000,
+        "usableFuelGal": 24.5,
+        "rangeNm": 415,
+        "timeHours": 5.2
+      },
+      {
+        "altitudeFt": 10000,
+        "usableFuelGal": 37.5,
+        "rangeNm": 690,
+        "timeHours": 8.7
+      }
+    ]
+  },
+  "climbPerformance": {
+    "rateOfClimbFpm": 715,
+    "serviceCeilingFt": 14700
+  },
+  "takeoffPerformance": {
+    "groundRollFt": 725,
+    "distanceOver50FtObstacleFt": 1340
+  },
+  "landingPerformance": {
+    "groundRollFt": 475,
+    "distanceOver51FtObstacleFt": 1200
+  },
+  "stallSpeedsCAS": {
+    "flapsUpPowerOff": 48,
+    "flapsDownPowerOff": 43
+  },
+  "weights": {
+    "maximum": {
+      "rampLb": 1675,
+      "takeoffLandingLb": 1670
+    },
+    "standardEmptyWeightLb": {
+      "cessna152": 1101,
+      "cessna152II": 1133
+    },
+    "maximumUsefulLoadLb": {
+      "cessna152": 574,
+      "cessna152II": 542
+    },
+    "baggageAllowanceLb": 120
+  },
+  "loadings": {
+    "wingLoadingLbPerSqFt": 10.5,
+    "powerLoadingLbPerHp": 15.2
+  },
+  "fuelAndOil": {
+    "fuelCapacityGal": 26,
+    "usableFuelGal": 24.5,
+    "oilCapacityQt": 6,
+    "approvedFuels": [
+      "100LL Aviation",
+      "100 Aviation",
+      "Automotive 91 octane minimum",
+      "Mixed automotive and aviation fuel"
+    ]
+  },
+  "engine": {
+    "model": "Avco Lycoming O-235-L2C",
+    "horsepower": 110,
+    "rpm": 2550
+  },
+  "propeller": {
+    "type": "Fixed Pitch",
+    "diameterIn": 69
+  },
+  "airspeedLimitations": {
+    "VNE": {
+      "kcas": 145,
+      "kias": 149
+    },
+    "VNO": {
+      "kcas": 108,
+      "kias": 111
+    },
+    "VA": [
+      { "weightLb": 1670, "kcas": 101, "kias": 104 },
+      { "weightLb": 1500, "kcas": 96, "kias": 98 },
+      { "weightLb": 1350, "kcas": 91, "kias": 93 }
+    ],
+    "VFE": {
+      "kcas": 87,
+      "kias": 85
+    },
+    "windowOpenMax": {
+      "kcas": 145,
+      "kias": 149
+    }
+  },
+  "airspeedIndicatorMarkings": {
+    "whiteArcKias": [35, 85],
+    "greenArcKias": [40, 111],
+    "yellowArcKias": [111, 149],
+    "redLineKias": 149
+  },
+  "loadFactorLimits": {
+    "flapsUp": {
+      "positiveG": 4.4,
+      "negativeG": -1.76
+    },
+    "flapsDown": {
+      "positiveG": 3.5
+    }
+  },
+  "powerplantLimits": {
+    "maxPowerBhp": 110,
+    "maxRpm": 2550,
+    "oilTemperatureMaxF": 245,
+    "oilPressurePsi": {
+      "min": 25,
+      "max": 100
+    }
+  },
+  "certification": {
+    "category": "Utility",
+    "aerobaticsApproved": true
+  }
+}
