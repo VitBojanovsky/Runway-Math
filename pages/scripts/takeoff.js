@@ -52,12 +52,78 @@ async function aproximate_flaps_setting(flapsSetting) {
     return flapsValue;
 }
 
+async function weightCorrection(weightLb, REF) {
+  return Math.pow(weightLb / REF.weightLb, 2);
+}
+
+
+async function airDensity(pressureAltFt) {
+  return REF.seaLevelDensity *
+    Math.pow(1 - 6.875e-6 * pressureAltFt, 4.256);
+}
+
+async function densityCorrection(pressureAltFt) {
+  return REF.seaLevelDensity / airDensity(pressureAltFt);
+}
+
+async function windCorrection(windKt) {
+  const ratio = windKt / REF.liftoffSpeedKt;
+  return Math.max(0.7, 1 / (1 - ratio));
+}
+
+async function flapCorrection(flapsDeg) {
+  if (flapsDeg <= 0) return 1.0;
+  else if (flapsDeg <= 10) return 0.9;
+  else if (flapsDeg <= 20) return 0.95;
+  else if (flapsDeg <= 30) return 1.1;
+  else {
+    return 1.0;
+    console.log("Flaps setting are fucked, using default correction factor of 1.0");
+  }
+}
+
+async function surfaceCorrection(surface) {
+  switch (surface) {
+    case "DRY":
+      return 1.0;
+    case "WET":
+      return 1.15;
+    case "GRASS":
+      return 1.3;
+    case "SOFT":
+      return 1.5;
+    default:
+      return 1.0;
+        console.log("Runway surface type is unknown, using default correction factor of 1.0");
+        console.log("Surface type: " + surface);
+        console.log("something is fucked");
+  }
+}
+
+async function calculateTakeoffGroundRoll({
+  weightLb,
+  pressureAltFt,
+  windKt,
+  flapsDeg,
+  runwaySurface
+}) {
+  return REF.groundRollFt
+    * weightCorrection(weightLb)
+    * densityCorrection(pressureAltFt)
+    * windCorrection(windKt)
+    * flapCorrection(flapsDeg)
+    * surfaceCorrection(runwaySurface);
+}
+
+
+
+
 
 
 document.getElementById('takeoff-form').addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        // Get input values from the form
+
         const aircraft = document.getElementById('aircraft').value;
         const pressure = parseFloat(document.getElementById('pressure').value);
         const temperature = parseFloat(document.getElementById('temperature').value);
@@ -68,11 +134,39 @@ document.getElementById('takeoff-form').addEventListener('submit', async (event)
         const flapsSetting = document.getElementById('flaps').value;
         const payload = parseFloat(document.getElementById('payload').value);
 
-        //get data from data/plane
+
         const data = await loadAircraftData(aircraft);
         console.log(data.takeoffPerformance);
 
-        // Calculate pressure altitude
+        if(emptyWeight> data.maximumUsefulLoadLb) {
+            alert("Payload exceeds maximum useful load!");
+            return;
+            console.log("Payload exceeds maximum useful load! by " + (emptyWeight - data.maximumUsefulLoadLb) + " lbs");
+            console.log(`Maximum Useful Load: ${data.maximumUsefulLoadLb} lbs`);
+        }
+
+        if(fuelLoad > data.fuelAndOil.fuelCapacityGal) {
+            alert("Fuel load exceeds maximum fuel capacity!");
+            return;
+            console.log("Fuel load exceeds maximum fuel capacity! by " + (fuelLoad - data.fuelAndOil.fuelCapacityGal) + " lbs");
+            console.log(`Fuel Capacity: ${data.fuelAndOil.fuelCapacityGal} lbs`);
+        }
+
+        const REF = {
+            weightLb: data.takeoffPerformance.reference.weightLb,
+            groundrollFt: data.takeoffPerformance.reference.groundrollFt,
+            liftoffspeedKt: data.takeoffPerformance.reference.liftoffspeedKt,
+            seaLeveldensity: 1.225
+        }
+
+
+        const weightCorrectionValue = await weightCorrection(aircraft_weight, REF);
+        const airdensityValue = await airDensity(pressureAltitude);
+        const densityCorrectionValue = await densityCorrection(pressureAltitude);
+        const windCorrectionValue = await windCorrection(wind);
+        const flapCorrectionValue = await flapCorrection(flapsValue);
+        const surfaceCorrectionValue = await surfaceCorrection(runwaySurface);
+
         const pressureAltitude = await calculatePressureAltitude(pressure, temperature, altitude);
         console.log(`Pressure Altitude: ${pressureAltitude} ft`);
 
@@ -80,7 +174,7 @@ document.getElementById('takeoff-form').addEventListener('submit', async (event)
         const aircraft_weight = aircraft_empty_weight + fuelLoad + payload;
         console.log(`Aircraft Weight: ${aircraft_weight} lbs`);
 
-        //check if aiircraft weight is over max takeoff weight
+
         if(aircraft_weight > data.maxTakeoffWeight) {
             alert("Aircraft weight exceeds maximum takeoff weight!");
             return;
@@ -95,16 +189,25 @@ document.getElementById('takeoff-form').addEventListener('submit', async (event)
             console.log(`Min Takeoff Weight: ${data.minTakeoffWeight} lbs`);
         }
 
-        //aproximate flaps setting
+
+
         const flapsValue = await aproximate_flaps_setting(flapsSetting);
         console.log(`Flaps Setting: ${flapsValue} degrees`);
 
 
-
-
-
         const aircraft_max_takeoff_weight = data.maxTakeoffWeight;
         const aircraft_takeoff_performance = data.takeoffPerformance;
+
+        const takeoffGroundRoll = await calculateTakeoffGroundRoll({
+            weightLb: aircraft_weight,
+            pressureAltFt: pressureAltitude,
+            windKt: wind,
+            flapsDeg: flapsValue,
+            runwaySurface: runwaySurface
+        });
+
+        const obstacleClearence = takeoffGroundRoll * data.poh.takeoffPerformance.obstacleClearanceFactorRatio;
+        console.log(`Takeoff Ground Roll: ${takeoffGroundRoll.toFixed(2)} ft`);
 
         
 
