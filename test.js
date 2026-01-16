@@ -4,7 +4,7 @@ import assert from "assert";
 console.log("Running tests...");
 
 // Load aircraft JSON directly
-const raw = fs.readFileSync("./public/data/cessna 152_specifications.json", "utf-8");
+const raw = fs.readFileSync("./public/data/cessna 152.json", "utf-8");
 const data = JSON.parse(raw);
 
 // Simple validation
