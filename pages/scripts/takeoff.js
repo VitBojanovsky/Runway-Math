@@ -14,12 +14,12 @@ async function calculatePressureAltitude(pressure, temperature, altitude) {
 }
     */
   
-function calculatePressureAltitude(pressureHpa, fieldElevationFt) {
+async function calculatePressureAltitude(pressureHpa, fieldElevationFt) {
   const standardPressure = 1013.25; // hPa
   return fieldElevationFt + (standardPressure - pressureHpa) * 27;
 }
 
-function calculateVSpeeds({
+async function calculateVSpeeds({
   weightLb,
   densityAltFt,
   REF
@@ -39,7 +39,8 @@ function calculateVSpeeds({
 }
 
 async function weightCorrection(weightLb, REF) {
-  return Math.pow(weightLb / REF.weightLb, 2);
+  const ratio = weightLb / REF.weightLb;
+  return 0.8 + 0.4 * ratio; 
 }
 
 
@@ -83,14 +84,14 @@ async function aproximate_flaps_setting(flapsSetting) {
     return flapsValue;
 }
 
-function densityCorrection(densityAltFt, REF) {
+async function densityCorrection(densityAltFt, REF) {
   const rho = airDensity(densityAltFt, REF);
   const ratio = REF.seaLevelDensity / rho;
   return Math.pow(ratio, 0.9); 
 }
 
 
-function calculateDensityAltitude(pressureAltFt, temperatureC) {
+async function calculateDensityAltitude(pressureAltFt, temperatureC) {
   const ISA_TEMP_SEA_LEVEL = 15; // °C
   const tempAtAlt = ISA_TEMP_SEA_LEVEL - (pressureAltFt / 1000) * 2;
   const isaDeviation = temperatureC - tempAtAlt;
@@ -98,20 +99,20 @@ function calculateDensityAltitude(pressureAltFt, temperatureC) {
 }
 
 
-function airDensity(densityAltFt, REF) {
+async function airDensity(densityAltFt, REF) {
   return REF.seaLevelDensity *
     Math.pow(1 - 6.875e-6 * densityAltFt, 4.256);
 }
 
 
-function densityCorrection(densityAltFt, REF) {
-  const rho = airDensity(densityAltFt, REF);
+async function densityCorrection(densityAltFt, REF) {
+  const rho = await airDensity(densityAltFt, REF);
   const ratio = REF.seaLevelDensity / rho;
   return Math.pow(ratio, 0.9); 
 }
 
 
-function windCorrection(windKt, REF) {
+async function windCorrection(windKt, REF) {
   const headwind = windKt; 
   const v = REF.liftoffSpeedKt;
 
@@ -119,7 +120,7 @@ function windCorrection(windKt, REF) {
   return Math.pow(v / effectiveSpeed, 2);
 }
 
-function calculateObstacleDistance({
+async function calculateObstacleDistance({
   groundRollFt,
   weightLb,
   densityAltFt,
@@ -183,7 +184,7 @@ async function surfaceCorrection(surface) {
   }
 }
 
-function calculateTakeoffGroundRoll({
+async function calculateTakeoffGroundRoll({
   weightLb,
   densityAltFt,
   windKt,
@@ -192,11 +193,11 @@ function calculateTakeoffGroundRoll({
   REF
 }) {
   return REF.groundRollFt
-    * weightCorrection(weightLb, REF)
-    * densityCorrection(densityAltFt, REF)
-    * windCorrection(windKt, REF)
-    * flapCorrection(flapsDeg)
-    * surfaceCorrection(runwaySurface);
+    * await weightCorrection(weightLb, REF)
+    * await densityCorrection(densityAltFt, REF)
+    * await windCorrection(windKt, REF)
+    * await flapCorrection(flapsDeg)
+    * await surfaceCorrection(runwaySurface);
 }
 
 
@@ -248,9 +249,10 @@ document.getElementById('takeoff-form').addEventListener('submit', async (event)
         const windCorrectionValue = await windCorrection(wind, REF);
         const surfaceCorrectionValue = await surfaceCorrection(runwaySurface);
 
-        const pressureAltitude = await calculatePressureAltitude(pressure, temperature, altitude);
+        const pressureAltitude = await calculatePressureAltitude(pressure, altitude);
         console.log(`Pressure Altitude: ${pressureAltitude} ft`);
-        const airdensityValue = await airDensity(pressureAltitude, REF);
+        const airdensityValue = await calculateDensityAltitude(pressureAltitude, temperature);
+        densityAltitude = airdensityValue;
         const densityCorrectionValue = await densityCorrection(pressureAltitude, REF);
 
         const aircraft_empty_weight = data.weights.standardEmptyWeightLb.cessna152;
@@ -277,7 +279,7 @@ document.getElementById('takeoff-form').addEventListener('submit', async (event)
 
         const takeoffGroundRoll = await calculateTakeoffGroundRoll({
             weightLb: aircraft_weight,
-            pressureAltFt: pressureAltitude,
+            densityAltFt: densityAltitude,
             windKt: wind,
             flapsDeg: flapsValue,
             runwaySurface: runwaySurface
